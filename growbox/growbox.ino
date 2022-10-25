@@ -103,7 +103,7 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP32Client","esp32","123456")) {
+    if (client.connect("ESP32Client","esp32","123456_654321")) {
       Serial.println("connected");
       // Subscribe
       client.subscribe("esp32/output");
@@ -123,8 +123,10 @@ void loop() {
   client.loop();
 
   long now = millis();
-  if (now - lastMsg > 15000) {
+  if (now - lastMsg > 3000) {
     lastMsg = now;
+
+    
     
     // Temperature in Celsius
     temperature = airSensor.getTemperature();   
@@ -159,6 +161,11 @@ void loop() {
     dtostrf(co2, 1, 2, co2String);
     Serial.print("CO2: ");
     Serial.println(co2String);
-    client.publish("Telemetry/Co2", co2String);
+
+    sprintf(msg, "{\"temperature\":%2.1f,\"humidity\":%2.0f, \"co2\":%3.0f}", temperature, humidity, co2);
+
+    Serial.println(msg);
+    client.publish("esp32/data", msg);    
+    
   }
 }
