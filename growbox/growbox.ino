@@ -1,3 +1,4 @@
+#include <Sparkfun_APDS9301_Library.h>
 #include <SparkFun_SCD30_Arduino_Library.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -5,12 +6,12 @@
 
 
 // Replace the next variables with your SSID/Password combination
-const char* ssid = "ASUS_168";
-const char* password = "89234154072";
+const char* ssid = "redmadrobot";
+const char* password = "a1b2c3d4e5";
 
 // Add your MQTT Broker IP address, example:
 //const char* mqtt_server = "192.168.1.144";
-const char* mqtt_server = "5.63.154.97";
+const char* mqtt_server = "90.188.115.54";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -19,6 +20,7 @@ char msg[50];
 int value = 0;
 
 SCD30 airSensor;
+APDS9301 apds;
 
 float temperature = 0;
 float humidity = 0;
@@ -30,10 +32,27 @@ const int ledPin = 4;
 void setup() {
 
   Wire.setPins(26,27);
-  Serial.begin(115200);
   Wire.begin();
+  Serial.begin(115200);
+  
+  // Initialize light sensor
+  // apds.begin(0x39);
+  // apds.setGain(APDS9301::LOW_GAIN);
+  // apds.setIntegrationTime(APDS9301::INT_TIME_13_7_MS);
+  // apds.setLowThreshold(0);
+  // apds.setHighThreshold(50);
+  // Serial.println(apds.getLowThreshold());
+  // Serial.println(apds.getHighThreshold());
 
-  // Try to initialize!
+  // Test light sensor
+  // while(1){
+  //   Serial.print("Luminous flux: ");
+  //   Serial.println(apds.readCH0Level(),6);
+  //   delay(500);
+  // }
+  
+
+  // Try to initialize SCD30
   Serial.println("Try to initialize!");
   if (airSensor.begin() == false)
   {
@@ -103,7 +122,8 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP32Client","esp32","123456_654321")) {
+    //if (client.connect("ESP32Client","esp32","123456_654321")) {
+    if (client.connect("ESP32Client")) {
       Serial.println("connected");
       // Subscribe
       client.subscribe("esp32/output");
@@ -165,7 +185,7 @@ void loop() {
     sprintf(msg, "{\"temperature\":%2.1f,\"humidity\":%2.0f, \"co2\":%3.0f}", temperature, humidity, co2);
 
     Serial.println(msg);
-    client.publish("esp32/data", msg);    
+    client.publish("mqtt_1/data", msg);    
     
   }
 }
