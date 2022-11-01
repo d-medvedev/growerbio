@@ -1,3 +1,5 @@
+#include <DHTesp.h>
+
 #include <Sparkfun_APDS9301_Library.h>
 #include <SparkFun_SCD30_Arduino_Library.h>
 #include <WiFi.h>
@@ -20,20 +22,25 @@ char msg[50];
 int value = 0;
 
 SCD30 airSensor;
+DHTesp dht;
 APDS9301 apds;
 
 float temperature = 0;
 float humidity = 0;
+float tempDHT = 0;
+float humDHT = 0;
 float co2 = 0;
 
-// LED Pin
+// Pins assignment
 const int ledPin = 4;
+int dhtPin = 18;
 
 void setup() {
 
   Wire.setPins(26,27);
   Wire.begin();
   Serial.begin(115200);
+  dht.setup(dhtPin, DHTesp::DHT11);
   
   // Initialize light sensor
   // apds.begin(0x39);
@@ -52,7 +59,7 @@ void setup() {
   // }
   
 
-  // Try to initialize SCD30
+  //Try to initialize SCD30
   Serial.println("Try to initialize!");
   if (airSensor.begin() == false)
   {
@@ -146,46 +153,37 @@ void loop() {
   if (now - lastMsg > 3000) {
     lastMsg = now;
 
+  	// Check if any reads failed and exit early (to try again).
+	if (dht.getStatus() != 0) {
+		Serial.println("DHT11 error status: " + String(dht.getStatusString()));		
+	}
     
-    
-    // Temperature in Celsius
-    temperature = airSensor.getTemperature();   
-    // Uncomment the next line to set temperature in Fahrenheit 
-    // (and comment the previous temperature line)
-    //temperature = 1.8 * bme.readTemperature() + 32; // Temperature in Fahrenheit
-    
-    // Convert the value to a char array
-    char tempString[8];
-    dtostrf(temperature, 1, 2, tempString);
-    Serial.print("Temperature: ");
-    Serial.println(tempString);
-    client.publish("Telemetry/Temperature", tempString);
+  // Temperature in Celsius
+  temperature = airSensor.getTemperature();   
+  
+  char tempString[8];
+  dtostrf(temperature, 1, 2, tempString);
+  Serial.print("Temperature: ");
+  Serial.println(tempString);
 
-    humidity = airSensor.getHumidity();
-    
-    // Convert the value to a char array
-    char humString[8];
-    dtostrf(humidity, 1, 2, humString);
-    Serial.print("Humidity: ");
-    Serial.println(humString);
-    client.publish("Telemetry/Humidity", humString);
+  humidity = airSensor.getHumidity();
+  
+  char humString[8];
+  dtostrf(humidity, 1, 2, humString);
+  Serial.print("Humidity: ");
+  Serial.println(humString);
+  
+  char co2String[8];
+  dtostrf(co2, 1, 2, co2String);
+  Serial.print("CO2: ");
+  Serial.println(co2String);
 
-    // CO2 in Celsius
-    co2 = airSensor.getCO2();   
-    // Uncomment the next line to set temperature in Fahrenheit 
-    // (and comment the previous temperature line)
-    //temperature = 1.8 * bme.readTemperature() + 32; // Temperature in Fahrenheit
-    
-    // Convert the value to a char array
-    char co2String[8];
-    dtostrf(co2, 1, 2, co2String);
-    Serial.print("CO2: ");
-    Serial.println(co2String);
+  TempAndHumidity newValues = dht.getTempAndHumidity();
 
-    sprintf(msg, "{\"temperature\":%2.1f,\"humidity\":%2.0f, \"co2\":%3.0f}", temperature, humidity, co2);
+  sprintf(msg, "{\"temperature\":%2.1f,\"humidity\":%2.0f, \"co2\":%3.0f, \"tempDHT\":%3.0f, \"humDHT\":%3.0f}", temperature, humidity, co2, newValues.temperature, newValues.humidity);
 
-    Serial.println(msg);
-    client.publish("mqtt_1/data", msg);    
+  Serial.println(msg);
+  client.publish("mqtt_1/data", msg);    
     
   }
 }
