@@ -1,0 +1,31 @@
+on System#Boot do
+  
+  
+
+endon
+
+
+On light_time_sett#dl_per do 
+ 
+    TaskValueSet dl_per,1,%eventvalue%
+endon
+
+On light_time_sett#ss_dur do 
+ 
+    TaskValueSet ss_dur,1,%eventvalue%
+endon
+
+On light_time_sett#day_start do 
+ 
+    TaskValueSet d_start,1,%eventvalue%
+endon
+
+On light_ctrl_sett#auto do 
+ 
+    TaskValueSet Autolight,1,%eventvalue%
+endon
+
+On light_ctrl_sett#level do 
+ 
+    TaskValueSet LightLevel,1,%eventvalue%
+endon
