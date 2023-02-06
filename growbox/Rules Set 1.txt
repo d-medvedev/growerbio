@@ -1,0 +1,25 @@
+on Clock#Time=All,**:** do
+    Let,1,[LtSgs#dStrtHr]+[LtSgs#dDrtn]
+    If %systime% >= [LtSgs#dStrtHr]:[LtSgs#dStrtMn] And %systime% <= %v1%:[LtSgs#dStrtMn] And [CdSgs#vlvSts] = 0 And [AutoCtrlSgs#cdAuto] = 1
+        If [Scd40#cd] <= [CdSgs#cdTrgt]
+            GPIO [CdSgs#Pin],1
+            LogEntry, 'Valve opened'
+            TaskValueSet CdSgs, vlvSts, 1
+            timerSet,1,[CdSgs#cdDrtn]
+        Endif
+    Endif
+Endon
+
+On Rules#Timer=1 do
+    GPIO [CdSgs#Pin],0 
+    LogEntry, 'Valve closed'
+    TaskValueSet CdSgs, vlvSts, 0
+Endon
+
+On MqCdSgs#cdTrgt do
+    TaskValueSet CdSgs,cdTrgt,%eventvalue%
+Endon
+
+On MqCdSgs#cdDrtn do
+    TaskValueSet CdSgs,cdDrtn,%eventvalue%
+Endon
