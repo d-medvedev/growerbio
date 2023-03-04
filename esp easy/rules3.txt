@@ -59,4 +59,7 @@ Endif
 If [rlPins#wtr] = 0
  TaskValueSet rlPins, wtr, 26
 Endif
+If [AutoCtrlSgs#wtrAuto] = 0 And [ManCtrlSgs#wtr] = 0
+ GPIO [rlPins#wtr],0
+Endif
 Endon

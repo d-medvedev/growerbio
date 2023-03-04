@@ -3,11 +3,10 @@ on System#Boot do
  Event, cfgLtTsk
  Event, cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
-Event,cdTmrEvt
-Event,ltTmrEvt
-Event,wtrTmrEvt
+TaskValueSet,swVer,Major,1
+TaskValueSet,swVer,Minor,0
+TaskValueSet,swVer,Fix,0
 Endon
-
 On Clock#Time=All,**:** Do
 If [AutoCtrlSgs#cdAuto] = 1 Or [AutoCtrlSgs#ltAuto] = 1
  TaskValueSet,TmEvtCntr,cd,[TmEvtCntr#cd]+1
@@ -31,7 +30,6 @@ If [AutoCtrlSgs#cdAuto] = 1 Or [AutoCtrlSgs#ltAuto] = 1
   GPIO [rlPins#lt],0
  Endif                            
 Endif
-//--//
 If [AutoCtrlSgs#wtrAuto] = 1
  TaskValueSet,TmEvtCntr,wtr,[TmEvtCntr#wtr]+1
  TaskValueSet WtrSgs, wtrIntvl,([LtSgs#dDrtn]-2*[WtrSgs#wtrShft])*60/([WtrSgs#wtrCntr]-1)
@@ -51,23 +49,16 @@ If [AutoCtrlSgs#wtrAuto] = 1
  Endif 
 Endif
 Endon
-
-on WiFi#Connected do
- Publish,%sysname%/status/ip_addr,%ip%
-endon
-
 On MqAutoCtrl#glblAuto Do
  Event, cdTmrEvt
  Event, ltTmrEvt
  Event, wtrTmrEvt
 Endon
-
 On MqStsReq#auto Do
    Publish,%sysname%/settings/co2_auto,[AutoCtrlSgs#cdAuto]
    Publish,%sysname%/settings/light_auto,[AutoCtrlSgs#ltAuto]
    Publish,%sysname%/settings/water_auto,[AutoCtrlSgs#wtrAuto]
 Endon
-
 On MqStsReq#man Do
    Publish,%sysname%/relay/co2,[ManCtrlSgs#cd]
    Publish,%sysname%/relay/light,[AutoCtrlSgs#lt]
