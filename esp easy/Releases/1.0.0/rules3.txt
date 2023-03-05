@@ -1,0 +1,62 @@
+On wtrTmrEvt do                       
+ GPIO [rlPins#wtr],1         
+ Let,10,60*[WtrSgs#wtrDrtn]
+ timerSet,5,%v10%
+Endon
+
+On Rules#Timer=5 do
+ GPIO [rlPins#wtr],0
+Endon
+
+On MqAutoCtrl#wtrAuto Do
+TaskValueSet AutoCtrlSgs, wtrAuto,%eventvalue%
+TaskValueSet,TmEvtCntr,wtr,0
+ If %eventvalue% = 1
+  TaskValueSet ManCtrlSgs,wtr,0
+  Publish,%sysname%/relay/water,0 
+ Endif   
+ If [AutoCtrlSgs#wtrAuto] = 0 And [ManCtrlSgs#wtr] = 0
+ GPIO [rlPins#wtr],0
+Endif
+Endon
+
+On MqWtrSgs#wtrCntr Do
+ TaskValueSet,WtrSgs, wtrCntr,%eventvalue%
+Endon
+
+On MqWtrSgs#wtrDrtn Do
+ TaskValueSet WtrSgs, wtrDrtn,%eventvalue%
+ LogEntry,"Received: %eventvalue%"
+Endon
+
+On MqWtrSgs#wtrShft Do
+ TaskValueSet,WtrSgs, wtrShft,%eventvalue%
+Endon
+
+On MqRlCtrl#wtr Do
+TaskValueSet ManCtrlSgs, wtr,%eventvalue%
+If %eventvalue% = 1
+  timerSet,5,0
+  TaskValueSet AutoCtrlSgs, wtrAuto,0
+  Publish,%sysname%/settings/water_auto,0 
+ Endif 
+ GPIO [rlPins#wtr],%eventvalue%
+Endon
+
+On cfgWtrTsk Do
+If [WtrSgs#wtrCntr] = 0
+ TaskValueSet WtrSgs,wtrCntr,12
+Endif
+If [WtrSgs#wtrDrtn] = 0
+ TaskValueSet WtrSgs,wtrDrtn,7
+Endif
+If [WtrSgs#wtrShft] = 0
+ TaskValueSet WtrSgs, wtrShft, 1
+Endif
+If [WtrSgs#wtrwtrInvl] = 0
+ TaskValueSet WtrSgs,wtrIntvl,1*3600+25*60
+Endif 
+If [rlPins#wtr] = 0
+ TaskValueSet rlPins, wtr, 26
+Endif
+Endon

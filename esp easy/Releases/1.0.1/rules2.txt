@@ -1,0 +1,68 @@
+On ltTmrEvt do
+ GPIO [rlPins#lt],1
+ LogEntry, 'Light is ON'
+Endon
+
+On MqAutoCtrl#ltAuto Do
+TaskValueSet AutoCtrlSgs, ltAuto,%eventvalue%
+TaskValueSet,TmEvtCntr,lt,0
+ If %eventvalue% = 1
+  TaskValueSet ManCtrlSgs,lt,0
+  Publish,%sysname%/relay/light,0 
+ Endif   
+ If [AutoCtrlSgs#ltAuto] = 0 And [ManCtrlSgs#lt] = 0
+ GPIO [rlPins#lt],0
+Endif
+Endon
+
+On MqLtSgs#dStrtHr do
+ TaskValueSet LtSgs,dStrtHr,%eventvalue%
+Endon
+
+On MqLtSgs#dStrtMn do
+ TaskValueSet LtSgs,dStrtMn,%eventvalue%
+Endon
+
+On MqLtSgs#dDrtn do
+ TaskValueSet LtSgs,dDrtn,%eventvalue%
+Endon
+
+On MqLtSgs#Tzn do
+ TaskValueSet LtSgs,Tzn,%eventvalue%
+Endon
+
+On MqRlCtrl#lt Do
+TaskValueSet ManCtrlSgs,lt,%eventvalue%
+If %eventvalue% = 1  
+  TaskValueSet AutoCtrlSgs, ltAuto,0
+  Publish,%sysname%/settings/light_auto,0 
+ Endif 
+ GPIO [rlPins#lt],%eventvalue%
+Endon
+
+On cfgLtTsk Do
+If [LtSgs#dStrtHr] = 0
+ TaskValueSet LtSgs,dStrtHr,6 
+Endif
+If [LtSgs#dStrtHr] = 0
+ TaskValueSet LtSgs,dStrtMn,0
+Endif
+If [LtSgs#dDrtn] = 0
+ TaskValueSet LtSgs,dDrtn,18
+Endif
+If [LtSgs#tZn] = 0
+ TaskValueSet LtSgs, tZn,7
+Endif
+If [rlPins#lt] = 0
+ TaskValueSet rlPins, lt,14
+Endif
+If [AutoCtrlSgs#ltAuto] = 0 And [ManCtrlSgs#lt] = 0
+ GPIO [rlPins#lt],0
+Endif
+Endon
+
+On WiFi#Connected Do
+  Publish %sysname%/status/sw_ver,[swVer#Maj].[swVer#Min].[swVer#Fix]
+  Publish %sysname%/status/ip_addr,%ip%
+ 
+Endon
