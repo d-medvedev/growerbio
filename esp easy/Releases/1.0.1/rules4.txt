@@ -1,0 +1,66 @@
+on System#Boot do
+ Event, cfgCdTsk
+ Event, cfgLtTsk
+ Event, cfgWtrTsk
+TaskValueSet CdSgs,vlvSts,0
+TaskValueSet,swVer,Maj,1
+TaskValueSet,swVer,Min,1
+TaskValueSet,swVer,Fix,0
+Endon
+On Clock#Time=All,**:** Do
+If [AutoCtrlSgs#cdAuto] = 1 Or [AutoCtrlSgs#ltAuto] = 1
+ TaskValueSet,TmEvtCntr,cd,[TmEvtCntr#cd]+1
+ TaskValueSet,TmEvtCntr,lt,[TmEvtCntr#lt]+1
+ Let,1,3600*([LtSgs#dStrtHr])+60*[LtSgs#dStrtMn]
+ Let,2,3600*([LtSgs#dStrtHr]+[LtSgs#dDrtn])+60*[LtSgs#dStrtMn]
+ Let,3,%unixday_sec%+3600*[LtSgs#tZn]
+ If %v3% > 24*3600
+  Let,3,[VAR#3]-24*3600
+ Endif
+ Let,4,[TmEvtCntr#cd]%[CdSgs#Gap]
+ If %v3% >= %v1% And %v3% <= %v2%
+  If [AutoCtrlSgs#cdAuto] = 1 And %v4% = 0
+   Event, cdTmrEvt  
+  Endif
+  If [AutoCtrlSgs#ltAuto] = 1
+   Event, ltTmrEvt  
+  Endif
+ Else 
+  GPIO [rlPins#cd],0
+  GPIO [rlPins#lt],0
+ Endif                            
+Endif
+If [AutoCtrlSgs#wtrAuto] = 1
+ TaskValueSet,TmEvtCntr,wtr,[TmEvtCntr#wtr]+1
+ TaskValueSet WtrSgs, wtrIntvl,([LtSgs#dDrtn]-2*[WtrSgs#wtrShft])*60/([WtrSgs#wtrCntr]-1)
+ Let,5,3600*([LtSgs#dStrtHr]+[WtrSgs#wtrShft])+60*[LtSgs#dStrtMn]
+ Let,6,3600*([LtSgs#dStrtHr]+[LtSgs#dDrtn]-[WtrSgs#wtrShft])+60*[LtSgs#dStrtMn]
+ Let,7, %unixday_sec%+3600*[LtSgs#tZn]
+ If %v7% > 24*3600
+  Let,7,[VAR#7]-24*3600
+ Endif 
+ Let,8, [TmEvtCntr#wtr]%[WtrSgs#wtrIntvl]
+ If %v7% >= %v5% And %v7% <= %v6%
+  If [AutoCtrlSgs#wtrAuto] = 1 And %v8% = 0
+   Event,wtrTmrEvt  
+  Endif
+ Else
+  GPIO [rlPins#wtr],0
+ Endif 
+Endif
+Endon
+On MqAutoCtrl#glblAuto Do
+ Event, cdTmrEvt
+ Event, ltTmrEvt
+ Event, wtrTmrEvt
+Endon
+On MqStsReq#auto Do
+   Publish,%sysname%/settings/co2_auto,[AutoCtrlSgs#cdAuto]
+   Publish,%sysname%/settings/light_auto,[AutoCtrlSgs#ltAuto]
+   Publish,%sysname%/settings/water_auto,[AutoCtrlSgs#wtrAuto]
+Endon
+On MqStsReq#man Do
+   Publish,%sysname%/relay/co2,[ManCtrlSgs#cd]
+   Publish,%sysname%/relay/light,[AutoCtrlSgs#lt]
+   Publish,%sysname%/relay/water,[AutoCtrlSgs#wtr]
+Endon
