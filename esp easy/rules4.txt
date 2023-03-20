@@ -4,7 +4,7 @@ on System#Boot do
  Event, cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
 TaskValueSet,swVer,Maj,1
-TaskValueSet,swVer,Min,1
+TaskValueSet,swVer,Min,2
 TaskValueSet,swVer,Fix,0
 Endon
 On Clock#Time=All,**:** Do
