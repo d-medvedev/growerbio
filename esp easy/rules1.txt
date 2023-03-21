@@ -3,6 +3,7 @@ If [Scd40#cd] <= [CdSgs#Trgt]
  GPIO [rlPins#cd],1
  LogEntry, 'Valve opened'
  TaskValueSet CdSgs, vlvSts, 1
+ Publish,%sysname%/Sts/vlvSts,1
  timerSet,2,[CdSgs#Drtn]
 Endif
 Endon
@@ -10,6 +11,7 @@ On Rules#Timer=2 do
  GPIO [rlPins#cd],0 
  LogEntry, 'Valve closed'
  TaskValueSet CdSgs, vlvSts, 0
+ Publish,%sysname%/Sts/vlvSts,0
 Endon
 On MqAutoCtrl#cdAuto Do
 TaskValueSet AutoCtrlSgs, cd,%eventvalue%

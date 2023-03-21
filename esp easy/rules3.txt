@@ -1,6 +1,7 @@
 On wtrTmrEvt do                       
  GPIO [rlPins#wtr],1
  TaskValueSet Wtr, Sts, 1
+ Publish,%sysname%/Wtr/Sts,1
  Let,10,60*[WtrSgs#wtrDrtn]
  timerSet,5,%v10%
 Endon
@@ -8,6 +9,7 @@ Endon
 On Rules#Timer=5 do
  GPIO [rlPins#wtr],0
  TaskValueSet Wtr, Sts, 0
+ Publish,%sysname%/Wtr/Sts,0
 Endon
 
 On MqAutoCtrl#wtrAuto Do

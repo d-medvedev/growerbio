@@ -1,5 +1,6 @@
 On ltTmrEvt do
  GPIO [rlPins#lt],1
+ Publish,%sysname%/Sts/ltSts,1
  LogEntry, 'Light is ON'
 Endon
 
@@ -12,6 +13,7 @@ TaskValueSet,TmEvtCntr,lt,0
  Endif   
  If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
   GPIO [rlPins#lt],0
+   Publish,%sysname%/Sts/ltSts,0
  Endif
 Endon
 
