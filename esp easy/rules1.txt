@@ -15,13 +15,13 @@ On Rules#Timer=2 do
 Endon
 On MqAutoCtrl#cdAuto Do
 TaskValueSet AutoCtrlSgs, cd,%eventvalue%
-TaskValueSet,TmEvtCntr,cd,0
  If %eventvalue% = 1
   TaskValueSet ManCtrlSgs,cd,0
   //Publish,%sysname%/relay/co2,0 
  Endif   
  If [AutoCtrlSgs#cd] = 0 And [ManCtrlSgs#cd] = 0
  GPIO [rlPins#cd],0
+ TaskValueSet,TmEvtCntr,cd,0
 Endif
 Endon
 On MqCdSgs#Trgt do

@@ -7,13 +7,13 @@ Endon
 On MqAutoCtrl#ltAuto Do
 TaskValueSet AutoCtrlSgs, lt,%eventvalue%
  Publish,%sysname%/status/auto_lt,%eventvalue% 
-TaskValueSet,TmEvtCntr,lt,0
  If %eventvalue% = 1
   //TaskValueSet ManCtrlSgs,lt,0  
  Endif   
  If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
   GPIO [rlPins#lt],0
    Publish,%sysname%/Sts/ltSts,0
+   TaskValueSet,TmEvtCntr,lt,0
  Endif
 Endon
 
