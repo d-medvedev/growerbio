@@ -1,0 +1,69 @@
+On cdTmrEvt do    
+If [Scd40#cd] <= [CdSgs#Trgt]
+ GPIO [rlPins#cd],1
+ LogEntry, 'Valve opened'
+ TaskValueSet CdSgs, vlvSts, 1
+ Publish,%sysname%/Sts/vlvSts,1
+ timerSet,2,[CdSgs#Drtn]
+Endif
+Endon
+On Rules#Timer=2 do
+ GPIO [rlPins#cd],0 
+ LogEntry, 'Valve closed'
+ TaskValueSet CdSgs, vlvSts, 0
+ Publish,%sysname%/Sts/vlvSts,0
+Endon
+On MqAutoCtrl#cdAuto Do
+TaskValueSet AutoCtrlSgs, cd,%eventvalue%
+ If %eventvalue% = 1
+  TaskValueSet ManCtrlSgs,cd,0
+  //Publish,%sysname%/relay/co2,0 
+ Endif   
+ If [AutoCtrlSgs#cd] = 0 And [ManCtrlSgs#cd] = 0
+ GPIO [rlPins#cd],0
+ TaskValueSet,TmEvtCntr,cd,0
+Endif
+Endon
+On MqCdSgs#Trgt do
+ TaskValueSet CdSgs,Trgt,%eventvalue%
+Endon
+
+On MqCdSgs#Drtn do
+ TaskValueSet CdSgs,Drtn,%eventvalue%
+Endon
+On MqCdSgs#Gap do
+ TaskValueSet CdSgs,Gap,%eventvalue%
+Endon
+On MqRlCtrl#cd Do 
+TaskValueSet ManCtrlSgs, cd,%eventvalue%
+If %eventvalue% = 1
+  timerSet,2,0
+  TaskValueSet AutoCtrlSgs, cdAuto,0
+  //Publish,%sysname%/settings/co2_auto,0 
+ Endif 
+ GPIO [rlPins#cd],%eventvalue%
+Endon
+On cfgCdTsk Do
+  If [CdSgs#Trgt] = 0
+ TaskValueSet CdSgs,Trgt,500
+Endif
+If [CdSgs#Drtn] = 0
+ TaskValueSet CdSgs,Drtn,60
+Endif
+If [CdSgs#Gap] = 0
+ TaskValueSet CdSgs,Gap,1
+Endif
+If [rlPins#cd] = 0
+ TaskValueSet rlPins,cd,25
+Endif
+If [AutoCtrlSgs#cdAuto] = 0 And [ManCtrlSgs#cd] = 0
+ GPIO [rlPins#cd],0
+Endif
+Endon
+On updCdSgs Do
+ Publish,%sysname%/settings/co2_targ,[CdSgs#Trgt]
+ Publish,%sysname%/settings/co2_dur,[CdSgs#Drtn]
+ Publish,%sysname%/settings/co2_gap,[CdSgs#Gap]
+ Publish,%sysname%/settings/co2_auto,[AutoCtrlSgs#cd]
+ //Publish,%sysname%/relay/co2,[ManCtrlSgs#cd]
+Endon
