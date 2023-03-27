@@ -17,7 +17,7 @@ On MqAutoCtrl#cdAuto Do
 TaskValueSet AutoCtrlSgs, cd,%eventvalue%
  If %eventvalue% = 1
   TaskValueSet ManCtrlSgs,cd,0
-  //Publish,%sysname%/relay/co2,0 
+  Publish,%sysname%/relay/co2,0 
  Endif   
  If [AutoCtrlSgs#cd] = 0 And [ManCtrlSgs#cd] = 0
  GPIO [rlPins#cd],0

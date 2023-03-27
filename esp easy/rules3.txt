@@ -1,8 +1,9 @@
 On wtrTmrEvt do                       
  GPIO [rlPins#wtr],1
  TaskValueSet Wtr, Sts, 1
+ TaskValueSet Wtr, Cntr, [Wtr#Cntr]+1
  Publish,%sysname%/Wtr/Sts,1
- Publish,%sysname%/Wtr/Cntr,[TmEvtCntr#wtr]
+ Publish,%sysname%/Wtr/Cntr,[Wtr#Cntr]
  Let,10,60*[WtrSgs#wtrDrtn]
  timerSet,5,%v10%
 Endon
@@ -21,7 +22,7 @@ TaskValueSet AutoCtrlSgs, wtr,%eventvalue%
  If [AutoCtrlSgs#wtr] = 0 And [ManCtrlSgs#wtr] = 0
  GPIO [rlPins#wtr],0
  TaskValueSet Wtr, Sts, 0
- TaskValueSet,TmEvtCntr,wtr,0
+ TaskValueSet,Wtr,Cntr,0
 Endif
 Endon
 
@@ -74,5 +75,5 @@ On updWtrSgs Do
  Publish,%sysname%/settings/wat_offset,[WtrSgs#wtrShft]
  Publish,%sysname%/settings/water_auto,[AutoCtrlSgs#wtr]
  Publish,%sysname%/settings/wat_intvl,[WtrSgs#wtrIntvl]
- Publish,%sysname%/Wtr/Cntr,[TmEvtCntr#wtr]
+ Publish,%sysname%/Wtr/Cntr,[Wtr#Cntr]
 Endon
