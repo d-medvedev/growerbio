@@ -74,6 +74,5 @@ On updWtrSgs Do
  Publish,%sysname%/settings/wat_dur,[WtrSgs#wtrDrtn]
  Publish,%sysname%/settings/wat_offset,[WtrSgs#wtrShft]
  Publish,%sysname%/settings/water_auto,[AutoCtrlSgs#wtr]
- Publish,%sysname%/settings/wat_intvl,[WtrSgs#wtrIntvl]
  Publish,%sysname%/Wtr/Cntr,[Wtr#Cntr]
 Endon

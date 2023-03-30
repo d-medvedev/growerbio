@@ -5,7 +5,7 @@ on System#Boot do
 TaskValueSet CdSgs,vlvSts,0
 TaskValueSet,swVer,Maj,1
 TaskValueSet,swVer,Min,5
-TaskValueSet,swVer,Fix,0
+TaskValueSet,swVer,Fix,1
 Endon
 On Clock#Time=All,**:** Do
 If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
@@ -46,7 +46,7 @@ If [AutoCtrlSgs#wtr] = 1
   Endif
  Else
   GPIO [rlPins#wtr],0
-  TaskValueSet Wtr, Cntr, [Wtr#Cntr]+1
+  TaskValueSet Wtr, Cntr, 0
  Endif
 If [Scd40#cd] = 0
  Reboot
