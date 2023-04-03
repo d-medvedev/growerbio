@@ -1,10 +1,10 @@
-On wtrTmrEvt do                       
- GPIO [rlPins#wtr],1
- TaskValueSet Wtr, Sts, 1
+On wtrTmrEvt do 
+ TaskValueSet Wtr, Sts,1
  TaskValueSet Wtr, Cntr, [Wtr#Cntr]+1
  Publish,%sysname%/Wtr/Sts,1
  Publish,%sysname%/Wtr/Cntr,[Wtr#Cntr]
  Let,10,60*[WtrSgs#wtrDrtn]
+ GPIO [rlPins#wtr],1
  timerSet,5,%v10%
 Endon
 
@@ -18,11 +18,15 @@ On MqAutoCtrl#wtrAuto Do
 TaskValueSet AutoCtrlSgs, wtr,%eventvalue%
  If %eventvalue% = 1
   TaskValueSet ManCtrlSgs,wtr,0
- Endif   
+ Endif
+ If [Wtr#Ena]
+ TaskValueSet Wtr,Cntr,[WtrSgs#wtrCntr]*(%v7%-%v5%)/(([LtSgs#dDrtn]-[WtrSgs#wtrShft])*3600)
+ Endif
  If [AutoCtrlSgs#wtr] = 0 And [ManCtrlSgs#wtr] = 0
  GPIO [rlPins#wtr],0
  TaskValueSet Wtr, Sts, 0
  TaskValueSet,Wtr,Cntr,0
+ TaskValueSet TmEvtCntr,wtr,0
 Endif
 Endon
 
@@ -49,6 +53,7 @@ If %eventvalue% = 1
 Endon
 
 On cfgWtrTsk Do
+TaskValueSet Wtr,Ena,1
 If [WtrSgs#wtrCntr] = 0
  TaskValueSet WtrSgs,wtrCntr,12
 Endif
@@ -60,13 +65,14 @@ If [WtrSgs#wtrShft] = 0
 Endif
 If [WtrSgs#wtrwtrInvl] = 0
  TaskValueSet WtrSgs,wtrIntvl,1*3600+25*60
-Endif 
+Endif
 If [rlPins#wtr] = 0
  TaskValueSet rlPins, wtr, 26
 Endif
 If [AutoCtrlSgs#wtrAuto] = 0 And [ManCtrlSgs#wtr] = 0
  GPIO [rlPins#wtr],0
  TaskValueSet Wtr, Sts, 0
+ TaskValueSet AutoCtrlSgs, wtrAuto, 1
 Endif
 Endon
 On updWtrSgs Do
