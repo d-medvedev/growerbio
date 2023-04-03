@@ -56,6 +56,7 @@ If [rlPins#lt] = 0
 Endif
 If [AutoCtrlSgs#ltAuto] = 0 And [ManCtrlSgs#lt] = 0
  GPIO [rlPins#lt],0
+ TaskValueSet AutoCtrlSgs, ltAuto,1
 Endif
 Endon
 
