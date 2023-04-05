@@ -5,7 +5,7 @@ Event,cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
 TaskValueSet,swVer,Maj,1
 TaskValueSet,swVer,Min,7
-TaskValueSet,swVer,Fix,0
+TaskValueSet,swVer,Fix,2
 Endon
 On Clock#Time=All,**:** Do
 If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
@@ -39,11 +39,12 @@ If [AutoCtrlSgs#wtr] = 1
   Let,7,[VAR#7]-24*3600
  Endif
  Let,8, [TmEvtCntr#wtr]%[WtrSgs#wtrIntvl]
- If %v7% >= %v5% And %v7% < %v6%
+ If %v7% >= %v5% And %v7% < %v6%+3600
    TaskValueSet,Wtr,Ena,1
  Else
   TaskValueSet,Wtr,Ena,0
   TaskValueSet Wtr,Cntr, 0
+  TaskValueSet,TmEvtCntr,wtr,0
  Endif 
  If [Wtr#Ena] = 1
   If [Wtr#Cntr] < [WtrSgs#wtrCntr]
@@ -52,14 +53,14 @@ If [AutoCtrlSgs#wtr] = 1
    Endif
   Else
    TaskValueSet,Wtr,Ena,0
-   TaskValueSet Wtr,Cntr, 0
-   TaskValueSet,TmEvtCntr,wtr,0
+   TaskValueSet Wtr,Cntr, 0   
   Endif  
 Endif
 TaskValueSet,TmEvtCntr,wtr,[TmEvtCntr#wtr]+1
 If [Scd40#cd] = 0
  Reboot
 Endif
+Publish %sysname%/status/LWT,1
 Endif
 Endon
 On MqAutoCtrl#glblAuto Do
