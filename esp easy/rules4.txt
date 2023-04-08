@@ -5,7 +5,7 @@ Event,cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
 TaskValueSet,swVer,Maj,1
 TaskValueSet,swVer,Min,7
-TaskValueSet,swVer,Fix,2
+TaskValueSet,swVer,Fix,3
 Endon
 On Clock#Time=All,**:** Do
 If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
@@ -55,8 +55,8 @@ If [AutoCtrlSgs#wtr] = 1
    TaskValueSet,Wtr,Ena,0
    TaskValueSet Wtr,Cntr, 0   
   Endif  
-Endif
-TaskValueSet,TmEvtCntr,wtr,[TmEvtCntr#wtr]+1
+  TaskValueSet,TmEvtCntr,wtr,[TmEvtCntr#wtr]+1
+ Endif
 If [Scd40#cd] = 0
  Reboot
 Endif
