@@ -54,9 +54,9 @@ Endif
 If [rlPins#lt] = 0
  TaskValueSet rlPins, lt,14
 Endif
-If [AutoCtrlSgs#ltAuto] = 0 And [ManCtrlSgs#lt] = 0
+If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
  GPIO [rlPins#lt],0
- TaskValueSet AutoCtrlSgs, ltAuto,1
+ TaskValueSet AutoCtrlSgs, lt,1
 Endif
 Endon
 
@@ -65,10 +65,13 @@ On WiFi#Connected Do
   Publish %sysname%/status/ip_addr,%ip%
 Endon
 
+on Time#Initialized do
+TaskValueSet Wtr,Cntr,[WtrSgs#wtrCntr]*(%v7%-%v5%)/(([LtSgs#dDrtn]-[WtrSgs#wtrShft])*3600)
+endon
+
 On updDlSgs Do
  Publish,%sysname%/settings/day_start_hr,[LtSgs#dStrtHr]
  Publish,%sysname%/settings/day_start_min,[LtSgs#dStrtMn]
  Publish,%sysname%/settings/day_dur,[LtSgs#dDrtn]
  Publish,%sysname%/settings/light_auto,[AutoCtrlSgs#lt]   
- //Publish,%sysname%/relay/light,[AutoCtrlSgs#lt] 
 Endon
