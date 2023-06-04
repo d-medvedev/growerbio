@@ -1,6 +1,6 @@
 On ltTmrEvt do
  GPIO [rlPins#lt],1
- Publish,%sysname%/Sts/ltSts,1
+ Publish,%sysname%/status/lt,1
  LogEntry, 'Light is ON'
 Endon
 
@@ -12,13 +12,14 @@ TaskValueSet AutoCtrlSgs, lt,%eventvalue%
  Endif   
  If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
   GPIO [rlPins#lt],0
-   Publish,%sysname%/Sts/ltSts,0
+   Publish,%sysname%/status/lt,0
    TaskValueSet,TmEvtCntr,lt,0
  Endif
 Endon
 
 On MqLtSgs#dStrtHr do
  TaskValueSet LtSgs,dStrtHr,%eventvalue%
+ TaskValueSet SgsUptodate,Sts,1
 Endon
 
 On MqLtSgs#dStrtMn do
@@ -36,6 +37,7 @@ Endon
 On MqRlCtrl#lt Do
 TaskValueSet ManCtrlSgs,lt,%eventvalue%
 GPIO [rlPins#lt],%eventvalue%
+Publish,%sysname%/status/lt,%eventvalue%
 Endon
 
 On cfgLtTsk Do
@@ -63,6 +65,7 @@ Endon
 On WiFi#Connected Do
   Publish %sysname%/status/sw_ver,[swVer#Maj].[swVer#Min].[swVer#Fix]
   Publish %sysname%/status/ip_addr,%ip%
+  Publish %sysname%/status/sgs_status,[SgsUptodate#Sts]
 Endon
 
 on Time#Initialized do
@@ -73,5 +76,7 @@ On updDlSgs Do
  Publish,%sysname%/settings/day_start_hr,[LtSgs#dStrtHr]
  Publish,%sysname%/settings/day_start_min,[LtSgs#dStrtMn]
  Publish,%sysname%/settings/day_dur,[LtSgs#dDrtn]
- Publish,%sysname%/settings/light_auto,[AutoCtrlSgs#lt]   
+ Publish %sysname%/settings/tzn,[LtSgs#tZn]
+ Publish,%sysname%/settings/light_auto,[AutoCtrlSgs#lt]
+ Publish %sysname%/status/sgs_status,[SgsUptodate#Sts]
 Endon

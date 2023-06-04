@@ -3,7 +3,7 @@ If [Scd40#cd] <= [CdSgs#Trgt]
  GPIO [rlPins#cd],1
  LogEntry, 'Valve opened'
  TaskValueSet CdSgs, vlvSts, 1
- Publish,%sysname%/Sts/vlvSts,1
+ Publish,%sysname%/status/cd,1
  timerSet,2,[CdSgs#Drtn]
 Endif
 Endon
@@ -11,7 +11,7 @@ On Rules#Timer=2 do
  GPIO [rlPins#cd],0 
  LogEntry, 'Valve closed'
  TaskValueSet CdSgs, vlvSts, 0
- Publish,%sysname%/Sts/vlvSts,0
+ Publish,%sysname%/status/cd, 0
 Endon
 On MqAutoCtrl#cdAuto Do
 TaskValueSet AutoCtrlSgs, cd,%eventvalue%
@@ -38,10 +38,10 @@ On MqRlCtrl#cd Do
 TaskValueSet ManCtrlSgs, cd,%eventvalue%
 If %eventvalue% = 1
   timerSet,2,0
-  TaskValueSet AutoCtrlSgs, cdAuto,0
-  //Publish,%sysname%/settings/co2_auto,0 
+  TaskValueSet AutoCtrlSgs, cdAuto,0  
  Endif 
  GPIO [rlPins#cd],%eventvalue%
+ Publish,%sysname%/status/cd,%eventvalue% 
 Endon
 On cfgCdTsk Do
   If [CdSgs#Trgt] = 0
