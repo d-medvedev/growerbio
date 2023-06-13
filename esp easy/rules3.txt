@@ -1,25 +1,26 @@
 On wtrTmrEvt do 
 TaskValueSet Wtr,Sts,1
 TaskValueSet Wtr,Cntr, [Wtr#Cntr]+1
-Publish,%sysname%/status/wtr,1
+Publish,%sysname%/status/wtr_pump,1
 Publish,%sysname%/Wtr/Cntr,[Wtr#Cntr]
 Let,10,60*[WtrSgs#wtrDrtn]
 GPIO [rlPins#wtr],1
+TaskValueSet Wtr,Sts,1
 timerSet,5,%v10%
 Endon
+
 On Rules#Timer=5 do
  GPIO [rlPins#wtr],0
- TaskValueSet Wtr, Sts, 0
- Publish,%sysname%/status/wtr,0
+ TaskValueSet Wtr,Sts,0
+ Publish,%sysname%/status/wtr_pump,0
 Endon
+
 On MqAutoCtrl#wtrAuto Do
-TaskValueSet AutoCtrlSgs, wtr,%eventvalue%
+TaskValueSet AutoCtrlSgs,wtr,%eventvalue%
  If %eventvalue% = 1
   TaskValueSet ManCtrlSgs,wtr,0
  Endif
- If [Wtr#Ena]
- TaskValueSet Wtr,Cntr,[WtrSgs#wtrCntr]*(%v7%-%v5%)/(([LtSgs#dDrtn]-[WtrSgs#wtrShft])*3600)
- Endif
+
  If [AutoCtrlSgs#wtr] = 0 And [ManCtrlSgs#wtr] = 0
  GPIO [rlPins#wtr],0
  TaskValueSet Wtr,Sts,0
@@ -27,15 +28,19 @@ TaskValueSet AutoCtrlSgs, wtr,%eventvalue%
  TaskValueSet TmEvtCntr,wtr,0
 Endif
 Endon
+
 On MqWtrSgs#wtrCntr Do
  TaskValueSet,WtrSgs,wtrCntr,%eventvalue%
 Endon
+
 On MqWtrSgs#wtrDrtn Do
  TaskValueSet WtrSgs,wtrDrtn,%eventvalue%
 Endon
+
 On MqWtrSgs#wtrShft Do
  TaskValueSet,WtrSgs,wtrShft,%eventvalue%
 Endon
+
 On MqRlCtrl#wtr Do
 TaskValueSet ManCtrlSgs,wtr,%eventvalue%
 If %eventvalue% = 1
@@ -44,35 +49,44 @@ If %eventvalue% = 1
  Endif 
  GPIO [rlPins#wtr],%eventvalue%
  TaskValueSet Wtr,Sts,%eventvalue%
- Publish,%sysname%/status/wtr,%eventvalue%
+ Publish,%sysname%/status/wtr_pump,%eventvalue%
 Endon
+
 On cfgWtrTsk Do
 TaskValueSet Wtr,Ena,1
 If [WtrSgs#wtrCntr] = 0
  TaskValueSet WtrSgs,wtrCntr,12
 Endif
+
 If [WtrSgs#wtrDrtn] = 0
  TaskValueSet WtrSgs,wtrDrtn,7
 Endif
+
 If [WtrSgs#wtrShft] = 0
  TaskValueSet WtrSgs, wtrShft,1
 Endif
-If [WtrSgs#wtrwtrInvl] = 0
+
+If [WtrSgs#wtrInvl] = 0
  TaskValueSet WtrSgs,wtrIntvl,1*3600+25*60
 Endif
+
 If [rlPins#wtr] = 0
  TaskValueSet rlPins,wtr,26
 Endif
+
 If [AutoCtrlSgs#wtr] = 0 And [ManCtrlSgs#wtr] = 0
  GPIO [rlPins#wtr],0
  TaskValueSet Wtr,Sts, 0
  TaskValueSet AutoCtrlSgs,wtr,1
 Endif
 Endon
+
 On updWtrSgs Do
- Publish,%sysname%/settings/wat_cnt,[WtrSgs#wtrCntr]
- Publish,%sysname%/settings/wat_dur,[WtrSgs#wtrDrtn]
- Publish,%sysname%/settings/wat_offset,[WtrSgs#wtrShft]
- Publish,%sysname%/settings/water_auto,[AutoCtrlSgs#wtr]
- Publish,%sysname%/settings/wat_intvl,[WtrSgs#wtrIntvl]
+ Publish,%sysname%/status/wtr_max_cnt,[WtrSgs#wtrCntr]
+ Publish,%sysname%/status/wtr_dur,[WtrSgs#wtrDrtn]
+ Publish,%sysname%/status/wtr_offset,[WtrSgs#wtrShft]
+ Publish,%sysname%/status/wtr_auto,[AutoCtrlSgs#wtr]
+ Publish,%sysname%/status/wtr_intvl,[WtrSgs#wtrIntvl]
+ Publish,%sysname%/status/wtr_pump,[Wtr#Sts]
+ Publish,%sysname%/status/wtr_curr_cnt,[Wtr#Cntr]
 Endon
