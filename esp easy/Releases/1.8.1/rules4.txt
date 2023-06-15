@@ -3,9 +3,9 @@ Event,cfgCdTsk
 Event,cfgLtTsk
 Event,cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
-TaskValueSet,swVer,Maj,2
-TaskValueSet,swVer,Min,0
-TaskValueSet,swVer,Fix,0
+TaskValueSet,swVer,Maj,1
+TaskValueSet,swVer,Min,8
+TaskValueSet,swVer,Fix,1
 Endon
 On Clock#Time=All,**:** Do
 If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
@@ -18,21 +18,7 @@ If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
   Let,3,[VAR#3]-24*3600
  Endif
  Let,4,[TmEvtCntr#cd]%[CdSgs#Gap]
- If %v2% > 24*3600
-  Let,2,[VAR#2]-24*3600
-  If %v3% >= %v1% Or %v3% <= %v2%
-   TaskValueSet, cycleCtrl,ltCond,1
-  Else
-   TaskValueSet, cycleCtrl,ltCond,0
-  Endif
- Else
-  If %v3% >= %v1% And %v3% <= %v2%
-   TaskValueSet, cycleCtrl,ltCond,1
-  Else
-   TaskValueSet, cycleCtrl,ltCond,0
-  Endif
- Endif
- If [cycleCtrl#ltCond] = 1
+ If %v3% >= %v1% And %v3% <= %v2%
   If [AutoCtrlSgs#cd] = 1 And %v4% = 0
    Event, cdTmrEvt
   Endif
@@ -53,23 +39,7 @@ If [AutoCtrlSgs#wtr] = 1
   Let,7,[VAR#7]-24*3600
  Endif
  Let,8, [TmEvtCntr#wtr]%[WtrSgs#wtrIntvl]
- 
- If %v6% > 24*3600
- Let,6,[VAR#6]-24*3600
-  If %v7% >= %v5% Or %v7% <= %v6%+3600
-   TaskValueSet, cycleCtrl,wtrCond,1
-  Else
-   TaskValueSet, cycleCtrl,wtrCond,0
-  Endif
- Else
-  If %v7% >= %v5% And %v7% <= %v6%+3600
-   TaskValueSet, cycleCtrl,wtrCond,1
-  Else
-   TaskValueSet, cycleCtrl,wtrCond,0
-  Endif
- Endif
- 
- If [cycleCtrl#wtrCond] = 1
+ If %v7% >= %v5% And %v7% < %v6%+3600
    TaskValueSet,Wtr,Ena,1
  Else
   TaskValueSet,Wtr,Ena,0
@@ -93,13 +63,11 @@ Endif
 Publish %sysname%/status/LWT,1
 Endif
 Endon
-
 On MqAutoCtrl#glblAuto Do
  Event, cdTmrEvt
  Event, ltTmrEvt
  Event, wtrTmrEvt
 Endon
-
 On MqStsReq#all Do
  Event, updDlSgs
  Event, updCdSgs
@@ -108,7 +76,6 @@ On MqStsReq#all Do
  Publish %sysname%/status/ip_addr,%ip%
  Publish %sysname%/status/LWT,1
 Endon
-
 On MqStsReq#reboot Do
   Reboot
 Endon
