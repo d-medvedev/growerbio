@@ -25,26 +25,28 @@ TaskValueSet AutoCtrlSgs, cd,%eventvalue%
  TaskValueSet,TmEvtCntr,cd,0
  Publish,%sysname%/status/co2_valve,0
 Endif
+Publish,%sysname%/status/co2_auto,[AutoCtrlSgs#cd]
 Endon
 
 On MqCdSgs#Trgt do
  TaskValueSet CdSgs,Trgt,%eventvalue%
+ Publish,%sysname%/status/co2_targ,[CdSgs#Trgt]
 Endon
 
 On MqCdSgs#Drtn do
  TaskValueSet CdSgs,Drtn,%eventvalue%
+ Publish,%sysname%/status/co2_dur,[CdSgs#Drtn]
 Endon
 
 On MqCdSgs#Gap do
  TaskValueSet CdSgs,Gap,%eventvalue%
+ Publish,%sysname%/status/co2_gap,[CdSgs#Gap]
 Endon
 
 On MqRlCtrl#cd Do 
 TaskValueSet ManCtrlSgs, cd,%eventvalue%
-If %eventvalue% = 1
-  timerSet,2,0
-  TaskValueSet AutoCtrlSgs, cdAuto,0  
- Endif 
+ timerSet,2,0
+ TaskValueSet AutoCtrlSgs, cd,0  
  GPIO [rlPins#cd],%eventvalue%
  Publish,%sysname%/status/co2_valve,%eventvalue% 
 Endon

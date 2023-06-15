@@ -27,26 +27,28 @@ TaskValueSet AutoCtrlSgs,wtr,%eventvalue%
  TaskValueSet,Wtr,Cntr,0
  TaskValueSet TmEvtCntr,wtr,0
 Endif
+Publish,%sysname%/status/wtr_auto,[AutoCtrlSgs#wtr]
 Endon
 
 On MqWtrSgs#wtrCntr Do
  TaskValueSet,WtrSgs,wtrCntr,%eventvalue%
+ Publish,%sysname%/status/wtr_max_cnt,[WtrSgs#wtrCntr]
 Endon
 
 On MqWtrSgs#wtrDrtn Do
  TaskValueSet WtrSgs,wtrDrtn,%eventvalue%
+ Publish,%sysname%/status/wtr_dur,[WtrSgs#wtrDrtn]
 Endon
 
 On MqWtrSgs#wtrShft Do
  TaskValueSet,WtrSgs,wtrShft,%eventvalue%
+ Publish,%sysname%/status/wtr_offset,[WtrSgs#wtrShft]
 Endon
 
 On MqRlCtrl#wtr Do
 TaskValueSet ManCtrlSgs,wtr,%eventvalue%
-If %eventvalue% = 1
-  timerSet,5,0
-  TaskValueSet AutoCtrlSgs,wtrAuto,0
- Endif 
+ timerSet,5,0
+ TaskValueSet AutoCtrlSgs,wtr,0
  GPIO [rlPins#wtr],%eventvalue%
  TaskValueSet Wtr,Sts,%eventvalue%
  Publish,%sysname%/status/wtr_pump,%eventvalue%
