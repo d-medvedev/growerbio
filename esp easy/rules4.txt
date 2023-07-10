@@ -5,7 +5,7 @@ Event,cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
 TaskValueSet,swVer,Maj,2
 TaskValueSet,swVer,Min,1
-TaskValueSet,swVer,Fix,1
+TaskValueSet,swVer,Fix,2
 Endon
 On Clock#Time=All,**:** Do
 If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1

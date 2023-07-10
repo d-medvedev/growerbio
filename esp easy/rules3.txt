@@ -52,6 +52,7 @@ TaskValueSet ManCtrlSgs,wtr,%eventvalue%
  GPIO [rlPins#wtr],%eventvalue%
  TaskValueSet Wtr,Sts,%eventvalue%
  Publish,%sysname%/status/wtr_pump,%eventvalue%
+ Publish,%sysname%/status/wtr_auto,[AutoCtrlSgs#wtr]
 Endon
 
 On cfgWtrTsk Do
