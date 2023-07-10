@@ -7,7 +7,7 @@ Endon
 On MqAutoCtrl#ltAuto Do
 TaskValueSet AutoCtrlSgs, lt,%eventvalue% 
  If %eventvalue% = 1
-  TaskValueSet ManCtrlSgs,lt,0  
+  //TaskValueSet ManCtrlSgs,lt,0  
  Endif
  If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
   GPIO [rlPins#lt],0
