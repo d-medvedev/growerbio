@@ -3,9 +3,9 @@ Event,cfgCdTsk
 Event,cfgLtTsk
 Event,cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
-TaskValueSet,swVer,Maj,2
-TaskValueSet,swVer,Min,1
-TaskValueSet,swVer,Fix,2
+TaskValueSet,swVer,Maj,3
+TaskValueSet,swVer,Min,0
+TaskValueSet,swVer,Fix,0
 Endon
 On Clock#Time=All,**:** Do
 If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1

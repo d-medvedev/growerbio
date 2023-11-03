@@ -1,95 +1,94 @@
-On wtrTmrEvt do 
-TaskValueSet Wtr,Sts,1
-TaskValueSet Wtr,Cntr, [Wtr#Cntr]+1
-Publish,%sysname%/status/wtr_pump,1
-Publish,%sysname%/status/wtr_curr_cnt,[Wtr#Cntr]
-Let,10,60*[WtrSgs#wtrDrtn]
-GPIO [rlPins#wtr],1
-TaskValueSet Wtr,Sts,1
-timerSet,5,%v10%
+On ltTmrEvt do
+ GPIO [rlPins#lt],1
+ Publish,%sysname%/status/lt_switch,1
+ LogEntry, 'Light is ON'
 Endon
 
-On Rules#Timer=5 do
- GPIO [rlPins#wtr],0
- TaskValueSet Wtr,Sts,0
- Publish,%sysname%/status/wtr_pump,0
-Endon
-
-On MqAutoCtrl#wtrAuto Do
-TaskValueSet AutoCtrlSgs,wtr,%eventvalue%
+On MqAutoCtrl#ltAuto Do
+TaskValueSet AutoCtrlSgs, lt,%eventvalue% 
  If %eventvalue% = 1
-  TaskValueSet ManCtrlSgs,wtr,0
+  //TaskValueSet ManCtrlSgs,lt,0  
  Endif
-
- If [AutoCtrlSgs#wtr] = 0 And [ManCtrlSgs#wtr] = 0
- GPIO [rlPins#wtr],0
- TaskValueSet Wtr,Sts,0
- TaskValueSet,Wtr,Cntr,0
- TaskValueSet TmEvtCntr,wtr,0
-Endif
-Publish,%sysname%/status/wtr_auto,[AutoCtrlSgs#wtr]
+ If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
+  GPIO [rlPins#lt],0
+   Publish,%sysname%/status/lt_switch,0
+   TaskValueSet,TmEvtCntr,lt,0
+ Endif
+ Publish,%sysname%/status/auto_lt,%eventvalue% 
 Endon
 
-On MqWtrSgs#wtrCntr Do
- TaskValueSet,WtrSgs,wtrCntr,%eventvalue%
- Publish,%sysname%/status/wtr_max_cnt,[WtrSgs#wtrCntr]
+On MqLtSgs#dStrtHr do
+ TaskValueSet LtSgs,dStrtHr,%eventvalue%
+ Publish,%sysname%/status/day_start_hr,[LtSgs#dStrtHr]
+ TaskValueSet SgsUptodate,Sts,1 
 Endon
 
-On MqWtrSgs#wtrDrtn Do
- TaskValueSet WtrSgs,wtrDrtn,%eventvalue%
- Publish,%sysname%/status/wtr_dur,[WtrSgs#wtrDrtn]
+On MqLtSgs#dStrtMn do
+ TaskValueSet LtSgs,dStrtMn,%eventvalue%
+ Publish,%sysname%/status/day_start_min,[LtSgs#dStrtMn]
 Endon
 
-On MqWtrSgs#wtrShft Do
- TaskValueSet,WtrSgs,wtrShft,%eventvalue%
- Publish,%sysname%/status/wtr_offset,[WtrSgs#wtrShft]
+On MqLtSgs#dDrtn do
+ TaskValueSet LtSgs,dDrtn,%eventvalue%
+ Publish,%sysname%/status/day_dur,[LtSgs#dDrtn]
 Endon
 
-On MqRlCtrl#wtr Do
-TaskValueSet ManCtrlSgs,wtr,%eventvalue%
- timerSet,5,0
- TaskValueSet AutoCtrlSgs,wtr,0
- GPIO [rlPins#wtr],%eventvalue%
- TaskValueSet Wtr,Sts,%eventvalue%
- Publish,%sysname%/status/wtr_pump,%eventvalue%
- Publish,%sysname%/status/wtr_auto,[AutoCtrlSgs#wtr]
+On MqLtSgs#Tzn do
+ TaskValueSet LtSgs,Tzn,%eventvalue%
+ Publish %sysname%/status/tzn,[LtSgs#tZn]
 Endon
 
-On cfgWtrTsk Do
-TaskValueSet Wtr,Ena,1
-If [WtrSgs#wtrCntr] = 0
- TaskValueSet WtrSgs,wtrCntr,12
-Endif
+On MqRlCtrl#lt Do
+TaskValueSet ManCtrlSgs,lt,%eventvalue%
+TaskValueSet AutoCtrlSgs, lt,0  
+GPIO [rlPins#lt],%eventvalue%
+Publish,%sysname%/status/lt_switch,%eventvalue%
+Endon
 
-If [WtrSgs#wtrDrtn] = 0
- TaskValueSet WtrSgs,wtrDrtn,7
-Endif
+On MqRlCtrl#ltPwm Do
+TaskValueSet ManCtrlSgs,lt,%eventvalue%
+TaskValueSet AutoCtrlSgs, lt,0
+Let,11,1000-%eventvalue%
+PWM,[rlPins#lt_pwm],%v11%
+Endon
 
-If [WtrSgs#wtrShft] = 0
- TaskValueSet WtrSgs, wtrShft,1
+On cfgLtTsk Do
+If [LtSgs#dStrtHr] = 0
+ TaskValueSet LtSgs,dStrtHr,6 
 Endif
-
-If [WtrSgs#wtrInvl] = 0
- TaskValueSet WtrSgs,wtrIntvl,1*3600+25*60
+If [LtSgs#dStrtHr] = 0
+ TaskValueSet LtSgs,dStrtMn,0
 Endif
-
-If [rlPins#wtr] = 0
- TaskValueSet rlPins,wtr,26
+If [LtSgs#dDrtn] = 0
+ TaskValueSet LtSgs,dDrtn,18
 Endif
-
-If [AutoCtrlSgs#wtr] = 0 And [ManCtrlSgs#wtr] = 0
- GPIO [rlPins#wtr],0
- TaskValueSet Wtr,Sts, 0
- TaskValueSet AutoCtrlSgs,wtr,1
+If [LtSgs#tZn] = 0
+ TaskValueSet LtSgs, tZn,7
+Endif
+If [rlPins#lt] = 0
+ TaskValueSet rlPins, lt,14
+Endif
+If [rlPins#lt_pwm] = 0
+ TaskValueSet rlPins, lt_pwm,14
+Endif
+If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
+ GPIO [rlPins#lt],0
+ TaskValueSet AutoCtrlSgs, lt,1
 Endif
 Endon
 
-On updWtrSgs Do
- Publish,%sysname%/status/wtr_max_cnt,[WtrSgs#wtrCntr]
- Publish,%sysname%/status/wtr_dur,[WtrSgs#wtrDrtn]
- Publish,%sysname%/status/wtr_offset,[WtrSgs#wtrShft]
- Publish,%sysname%/status/wtr_auto,[AutoCtrlSgs#wtr]
- Publish,%sysname%/status/wtr_intvl,[WtrSgs#wtrIntvl]
- Publish,%sysname%/status/wtr_pump,[Wtr#Sts]
- Publish,%sysname%/status/wtr_curr_cnt,[Wtr#Cntr]
+On WiFi#Connected Do
+  Publish %sysname%/status/sw_ver,[swVer#Maj].[swVer#Min].[swVer#Fix]
+  Publish %sysname%/status/ip_addr,%ip%
+  Publish %sysname%/status/sgs_status,[SgsUptodate#Sts]
+Endon
+
+On updDlSgs Do
+ Publish,%sysname%/status/day_start_hr,[LtSgs#dStrtHr]
+ Publish,%sysname%/status/day_start_min,[LtSgs#dStrtMn]
+ Publish,%sysname%/status/day_dur,[LtSgs#dDrtn]
+ Publish %sysname%/status/tzn,[LtSgs#tZn]
+ Publish,%sysname%/status/auto_lt,[AutoCtrlSgs#lt]
+ Publish,%sysname%/status/lt_switch,%eventvalue%
+ Publish %sysname%/status/sgs_status,[SgsUptodate#Sts]
 Endon

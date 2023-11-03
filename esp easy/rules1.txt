@@ -48,8 +48,7 @@ TaskValueSet ManCtrlSgs, cd,%eventvalue%
  timerSet,2,0
  TaskValueSet AutoCtrlSgs, cd,0  
  GPIO [rlPins#cd],%eventvalue%
- Publish,%sysname%/status/co2_valve,%eventvalue%
- Publish,%sysname%/status/co2_auto,[AutoCtrlSgs#cd]
+ Publish,%sysname%/status/co2_valve,%eventvalue% 
 Endon
 
 On cfgCdTsk Do
