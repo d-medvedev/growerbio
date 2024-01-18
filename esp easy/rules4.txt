@@ -4,7 +4,7 @@ Event,cfgLtTsk
 Event,cfgWtrTsk
 TaskValueSet CdSgs,vlvSts,0
 TaskValueSet,swVer,Maj,3
-TaskValueSet,swVer,Min,0
+TaskValueSet,swVer,Min,1
 TaskValueSet,swVer,Fix,0
 Endon
 On Clock#Time=All,**:** Do
