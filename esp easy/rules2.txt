@@ -1,4 +1,5 @@
 On ltTmrEvt do
+ PWM,[rlPins#lt_pwm],[LightPWM#Val]
  GPIO [rlPins#lt],1
  Publish,%sysname%/status/lt_switch,1
  LogEntry, 'Light is ON'
@@ -46,10 +47,9 @@ Publish,%sysname%/status/lt_switch,%eventvalue%
 Endon
 
 On MqRlCtrl#ltPwm Do
-TaskValueSet ManCtrlSgs,lt,%eventvalue%
-TaskValueSet AutoCtrlSgs, lt,0
-Let,11,1000-%eventvalue%
+Let,11,480-4.8*%eventvalue%
 PWM,[rlPins#lt_pwm],%v11%
+TaskValueSet LightPWM,Val,%v11%
 Endon
 
 On cfgLtTsk Do
@@ -69,7 +69,7 @@ If [rlPins#lt] = 0
  TaskValueSet rlPins, lt,14
 Endif
 If [rlPins#lt_pwm] = 0
- TaskValueSet rlPins, lt_pwm,14
+ TaskValueSet rlPins, lt_pwm,17
 Endif
 If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
  GPIO [rlPins#lt],0
