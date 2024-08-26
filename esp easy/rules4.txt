@@ -1,15 +1,23 @@
 on System#Boot do
-Event,cfgCdTsk
-Event,cfgLtTsk
+
+NeoPixel,4,30,0,0
 Event,cfgWtrTsk
-TaskValueSet CdSgs,vlvSts,0
-TaskValueSet,swVer,Maj,3
-TaskValueSet,swVer,Min,1
+Event,cfgLtTsk
+Event,cfgVentTsk
+
+TaskValueSet,swVer,Maj,4
+TaskValueSet,swVer,Min,0
 TaskValueSet,swVer,Fix,0
 Endon
 On Clock#Time=All,**:** Do
-If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
- TaskValueSet,TmEvtCntr,cd,[TmEvtCntr#cd]+1
+If [AutoCtrlSgs#vent] = 1
+TaskValueSet,TmEvtCntr,vent,[TmEvtCntr#vent]+1
+ Let,4,[TmEvtCntr#vent]%[VentSgs#ventGapMin]
+ If %v4% = 0
+  Event, ventTmrEvt
+ Endif
+Endif
+If [AutoCtrlSgs#lt] = 1
  TaskValueSet,TmEvtCntr,lt,[TmEvtCntr#lt]+1
  Let,1,3600*([LtSgs#dStrtHr])+60*[LtSgs#dStrtMn]
  Let,2,3600*([LtSgs#dStrtHr]+[LtSgs#dDrtn])+60*[LtSgs#dStrtMn]
@@ -17,7 +25,6 @@ If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
  If %v3% > 24*3600
   Let,3,[VAR#3]-24*3600
  Endif
- Let,4,[TmEvtCntr#cd]%[CdSgs#Gap]
  If %v2% > 24*3600
   Let,2,[VAR#2]-24*3600
   If %v3% >= %v1% Or %v3% <= %v2%
@@ -33,17 +40,15 @@ If [AutoCtrlSgs#cd] = 1 Or [AutoCtrlSgs#lt] = 1
   Endif
  Endif
  If [cycleCtrl#ltCond] = 1
-  If [AutoCtrlSgs#cd] = 1 And %v4% = 0
-   Event, cdTmrEvt
-  Endif
   If [AutoCtrlSgs#lt] = 1
    Event, ltTmrEvt
   Endif
  Else
-  GPIO [rlPins#cd],0
   GPIO [rlPins#lt],0
+  Publish,%sysname%/status/lt_switch,0
  Endif
 Endif
+
 If [AutoCtrlSgs#wtr] = 1 
  TaskValueSet WtrSgs, wtrIntvl,([LtSgs#dDrtn]-2*[WtrSgs#wtrShft])*60/([WtrSgs#wtrCntr]-1)
  Let,5,3600*([LtSgs#dStrtHr]+[WtrSgs#wtrShft])+60*[LtSgs#dStrtMn]
@@ -88,21 +93,20 @@ If [AutoCtrlSgs#wtr] = 1
   TaskValueSet,TmEvtCntr,wtr,[TmEvtCntr#wtr]+1
  Endif
 If [Scd40#cd] = 0
- Reboot
+ #Reboot
 Endif
-Publish %sysname%/status/LWT,1
 Endif
 Endon
 
 On MqAutoCtrl#glblAuto Do
- Event, cdTmrEvt
+ Event, ventTmrEvt
  Event, ltTmrEvt
  Event, wtrTmrEvt
 Endon
 
 On MqStsReq#all Do
  Event, updDlSgs
- Event, updCdSgs
+ Event, updVentSgs
  Event, updWtrSgs
  Publish %sysname%/status/sw_ver,[swVer#Maj].[swVer#Min].[swVer#Fix]
  Publish %sysname%/status/ip_addr,%ip%

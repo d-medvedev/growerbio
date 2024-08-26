@@ -33,11 +33,13 @@ Endon
 On MqWtrSgs#wtrCntr Do
  TaskValueSet,WtrSgs,wtrCntr,%eventvalue%
  Publish,%sysname%/status/wtr_max_cnt,[WtrSgs#wtrCntr]
+ config,task,wtrCntrNvs,setlevel,%eventvalue%
 Endon
 
 On MqWtrSgs#wtrDrtn Do
  TaskValueSet WtrSgs,wtrDrtn,%eventvalue%
  Publish,%sysname%/status/wtr_dur,[WtrSgs#wtrDrtn]
+ config,task,wtrDrtnNvs,setlevel,%eventvalue%
 Endon
 
 On MqWtrSgs#wtrShft Do
@@ -58,11 +60,11 @@ Endon
 On cfgWtrTsk Do
 TaskValueSet Wtr,Ena,1
 If [WtrSgs#wtrCntr] = 0
- TaskValueSet WtrSgs,wtrCntr,12
+ TaskValueSet WtrSgs,wtrCntr,[wtrCntrNvs#GetLevel]
 Endif
 
 If [WtrSgs#wtrDrtn] = 0
- TaskValueSet WtrSgs,wtrDrtn,7
+ TaskValueSet WtrSgs,wtrDrtn,[wtrDrtnNvs#GetLevel]
 Endif
 
 If [WtrSgs#wtrShft] = 0

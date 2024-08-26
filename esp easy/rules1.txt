@@ -1,79 +1,82 @@
-On cdTmrEvt do    
-If [Scd40#cd] <= [CdSgs#Trgt]
- GPIO [rlPins#cd],1
- LogEntry, 'Valve opened'
- TaskValueSet CdSgs, vlvSts, 1
- Publish,%sysname%/status/co2_valve,1
- timerSet,2,[CdSgs#Drtn]
-Endif
+On ventTmrEvt do 
+Publish,%sysname%/status/vent_switch,1
+Let,11,60*[VentSgs#ventGapMin]*[VentSgs#ventDrtnPerc]/100
+GPIO [rlPins#vent],1
+TaskValueSet VentSgs,ventSts,1
+timerSet,2,%v11%
 Endon
 
 On Rules#Timer=2 do
- GPIO [rlPins#cd],0 
- LogEntry, 'Valve closed'
- TaskValueSet CdSgs, vlvSts, 0
- Publish,%sysname%/status/co2_valve,0
+ GPIO [rlPins#vent],0
+ TaskValueSet VentSgs,ventSts,0
+ Publish,%sysname%/status/vent_switch,0
 Endon
 
-On MqAutoCtrl#cdAuto Do
-TaskValueSet AutoCtrlSgs, cd,%eventvalue%
+On MQTT#Connected Do
+ NeoPixel,4,0,30,0
+ Publish %sysname%/status/sw_ver,[swVer#Maj].[swVer#Min].[swVer#Fix]
+ Publish %sysname%/status/ip_addr,%ip%
+ Publish %sysname%/status/sgs_status,[SgsUptodate#Sts]
+Endon
+
+On MqAutoCtrl#ventAuto Do
+TaskValueSet AutoCtrlSgs,vent,%eventvalue%
  If %eventvalue% = 1
-  TaskValueSet ManCtrlSgs,cd,0
- Endif   
- If [AutoCtrlSgs#cd] = 0 And [ManCtrlSgs#cd] = 0
- GPIO [rlPins#cd],0
- TaskValueSet,TmEvtCntr,cd,0
- Publish,%sysname%/status/co2_valve,0
+  TaskValueSet ManCtrlSgs,vent,0
+ Endif
+
+ If [AutoCtrlSgs#vent] = 0 And [ManCtrlSgs#vent] = 0
+ GPIO [rlPins#vent],0
+ TaskValueSet VentSgs,ventSts,0
+ TaskValueSet TmEvtCntr,vent,0
 Endif
-Publish,%sysname%/status/co2_auto,[AutoCtrlSgs#cd]
+Publish,%sysname%/status/vent_auto,[AutoCtrlSgs#vent]
 Endon
 
-On MqCdSgs#Trgt do
- TaskValueSet CdSgs,Trgt,%eventvalue%
- Publish,%sysname%/status/co2_targ,[CdSgs#Trgt]
+On MqVentSgs#ventDrtnPerc Do
+ TaskValueSet VentSgs,ventDrtnPerc,%eventvalue%
+ Publish,%sysname%/status/vent_dur,[VentSgs#ventDrtnPerc]
+ config,task,ventDrtnPercNvs,setlevel,%eventvalue%
 Endon
 
-On MqCdSgs#Drtn do
- TaskValueSet CdSgs,Drtn,%eventvalue%
- Publish,%sysname%/status/co2_dur,[CdSgs#Drtn]
+On MqVentSgs#ventGapMin Do
+ TaskValueSet VentSgs,ventGapMin,%eventvalue%
+ Publish,%sysname%/status/vent_dur,[VentSgs#ventGapMin]
+ config,task,ventGapMinNvs,setlevel,%eventvalue%
 Endon
 
-On MqCdSgs#Gap do
- TaskValueSet CdSgs,Gap,%eventvalue%
- Publish,%sysname%/status/co2_gap,[CdSgs#Gap]
+On MqRlCtrl#vent Do
+TaskValueSet ManCtrlSgs,vent,%eventvalue%
+ TaskValueSet AutoCtrlSgs,vent,0
+ GPIO [rlPins#vent],%eventvalue%
+ TaskValueSet Vent,Sts,%eventvalue%
+ Publish,%sysname%/status/vent_switch,%eventvalue%
+ Publish,%sysname%/status/vent_auto,[AutoCtrlSgs#vent]
 Endon
 
-On MqRlCtrl#cd Do 
-TaskValueSet ManCtrlSgs, cd,%eventvalue%
- timerSet,2,0
- TaskValueSet AutoCtrlSgs, cd,0  
- GPIO [rlPins#cd],%eventvalue%
- Publish,%sysname%/status/co2_valve,%eventvalue% 
-Endon
+On cfgVentTsk Do
+If [VentSgs#ventDrtnPerc] = 0
+ TaskValueSet VentSgs,ventDrtnPerc,[ventDrtnPercNvs#GetLevel]
+Endif
 
-On cfgCdTsk Do
-  If [CdSgs#Trgt] = 0
- TaskValueSet CdSgs,Trgt,500
+If [VentSgs#ventGapMin] = 0
+ TaskValueSet VentSgs,ventGapMin,[ventGapMinNvs#GetLevel]
 Endif
-If [CdSgs#Drtn] = 0
- TaskValueSet CdSgs,Drtn,60
+
+If [rlPins#vent] = 0
+ TaskValueSet rlPins,vent,25
 Endif
-If [CdSgs#Gap] = 0
- TaskValueSet CdSgs,Gap,1
-Endif
-If [rlPins#cd] = 0
- TaskValueSet rlPins,cd,25
-Endif
-If [AutoCtrlSgs#cd] = 0 And [ManCtrlSgs#cd] = 0
- GPIO [rlPins#cd],0
- TaskValueSet AutoCtrlSgs, cd, 1
+
+If [AutoCtrlSgs#vent] = 0 And [ManCtrlSgs#vent] = 0
+ GPIO [rlPins#vent],0
+ TaskValueSet Vent,Sts, 0
+ TaskValueSet AutoCtrlSgs,vent,1
 Endif
 Endon
 
-On updCdSgs Do
- Publish,%sysname%/status/co2_targ,[CdSgs#Trgt]
- Publish,%sysname%/status/co2_dur,[CdSgs#Drtn]
- Publish,%sysname%/status/co2_gap,[CdSgs#Gap]
- Publish,%sysname%/status/co2_auto,[AutoCtrlSgs#cd]
- Publish,%sysname%/status/co2_valve,[CdSgs#vlvSts]
+On updVentSgs Do
+ Publish,%sysname%/status/vent_gap,[VentSgs#ventGapMin]
+ Publish,%sysname%/status/vent_dur,[VentSgs#ventDrtnPerc]
+ Publish,%sysname%/status/vent_switch,[VentSgs#Sts]
+ Publish,%sysname%/status/vent_auto,[AutoCtrlSgs#vent]
 Endon

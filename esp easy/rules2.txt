@@ -21,22 +21,26 @@ Endon
 On MqLtSgs#dStrtHr do
  TaskValueSet LtSgs,dStrtHr,%eventvalue%
  Publish,%sysname%/status/day_start_hr,[LtSgs#dStrtHr]
- TaskValueSet SgsUptodate,Sts,1 
+ TaskValueSet SgsUptodate,Sts,1
+ config,task,dStrtHrNvs,setlevel,%eventvalue%
 Endon
 
 On MqLtSgs#dStrtMn do
  TaskValueSet LtSgs,dStrtMn,%eventvalue%
  Publish,%sysname%/status/day_start_min,[LtSgs#dStrtMn]
+ config,task,dStrtMnNvs,setlevel,%eventvalue%
 Endon
 
 On MqLtSgs#dDrtn do
  TaskValueSet LtSgs,dDrtn,%eventvalue%
  Publish,%sysname%/status/day_dur,[LtSgs#dDrtn]
+  config,task,dDrtnNvs,setlevel,%eventvalue%
 Endon
 
 On MqLtSgs#Tzn do
  TaskValueSet LtSgs,Tzn,%eventvalue%
  Publish %sysname%/status/tzn,[LtSgs#tZn]
+  config,task,TznNvs,setlevel,%eventvalue%
 Endon
 
 On MqRlCtrl#lt Do
@@ -50,20 +54,24 @@ On MqRlCtrl#ltPwm Do
 Let,11,480-4.8*%eventvalue%
 PWM,[rlPins#lt_pwm],%v11%
 TaskValueSet LightPWM,Val,%v11%
+config,task,LightPWMNvs,setlevel,%v11%
 Endon
 
 On cfgLtTsk Do
 If [LtSgs#dStrtHr] = 0
- TaskValueSet LtSgs,dStrtHr,6 
+ TaskValueSet LtSgs,dStrtHr,[dStrtHrNvs#GetLevel] 
 Endif
 If [LtSgs#dStrtHr] = 0
- TaskValueSet LtSgs,dStrtMn,0
+ TaskValueSet LtSgs,dStrtMn,[dStrtMnNvs#GetLevel]
 Endif
 If [LtSgs#dDrtn] = 0
- TaskValueSet LtSgs,dDrtn,18
+ TaskValueSet LtSgs,dDrtn,[dDrtnNvs#GetLevel]
 Endif
 If [LtSgs#tZn] = 0
- TaskValueSet LtSgs, tZn,7
+ TaskValueSet LtSgs, Tzn,[TznNvs#GetLevel]
+Endif
+If [LightPWM#Val] = 0
+ TaskValueSet LightPWM, Val,[LightPWMNvs#GetLevel]
 Endif
 If [rlPins#lt] = 0
  TaskValueSet rlPins, lt,14
@@ -75,12 +83,6 @@ If [AutoCtrlSgs#lt] = 0 And [ManCtrlSgs#lt] = 0
  GPIO [rlPins#lt],0
  TaskValueSet AutoCtrlSgs, lt,1
 Endif
-Endon
-
-On WiFi#Connected Do
-  Publish %sysname%/status/sw_ver,[swVer#Maj].[swVer#Min].[swVer#Fix]
-  Publish %sysname%/status/ip_addr,%ip%
-  Publish %sysname%/status/sgs_status,[SgsUptodate#Sts]
 Endon
 
 On updDlSgs Do
