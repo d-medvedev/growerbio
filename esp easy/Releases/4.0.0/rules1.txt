@@ -1,0 +1,82 @@
+On ventTmrEvt do 
+Publish,%sysname%/status/vent_switch,1
+Let,11,60*[VentSgs#ventGapMin]*[VentSgs#ventDrtnPerc]/100
+GPIO [rlPins#vent],1
+TaskValueSet VentSgs,ventSts,1
+timerSet,2,%v11%
+Endon
+
+On Rules#Timer=2 do
+ GPIO [rlPins#vent],0
+ TaskValueSet VentSgs,ventSts,0
+ Publish,%sysname%/status/vent_switch,0
+Endon
+
+On MQTT#Connected Do
+ NeoPixel,4,0,30,0
+ Publish %sysname%/status/sw_ver,[swVer#Maj].[swVer#Min].[swVer#Fix]
+ Publish %sysname%/status/ip_addr,%ip%
+ Publish %sysname%/status/sgs_status,[SgsUptodate#Sts]
+Endon
+
+On MqAutoCtrl#ventAuto Do
+TaskValueSet AutoCtrlSgs,vent,%eventvalue%
+ If %eventvalue% = 1
+  TaskValueSet ManCtrlSgs,vent,0
+ Endif
+
+ If [AutoCtrlSgs#vent] = 0 And [ManCtrlSgs#vent] = 0
+ GPIO [rlPins#vent],0
+ TaskValueSet VentSgs,ventSts,0
+ TaskValueSet TmEvtCntr,vent,0
+Endif
+Publish,%sysname%/status/vent_auto,[AutoCtrlSgs#vent]
+Endon
+
+On MqVentSgs#ventDrtnPerc Do
+ TaskValueSet VentSgs,ventDrtnPerc,%eventvalue%
+ Publish,%sysname%/status/vent_dur,[VentSgs#ventDrtnPerc]
+ config,task,ventDrtnPercNvs,setlevel,%eventvalue%
+Endon
+
+On MqVentSgs#ventGapMin Do
+ TaskValueSet VentSgs,ventGapMin,%eventvalue%
+ Publish,%sysname%/status/vent_dur,[VentSgs#ventGapMin]
+ config,task,ventGapMinNvs,setlevel,%eventvalue%
+Endon
+
+On MqRlCtrl#vent Do
+TaskValueSet ManCtrlSgs,vent,%eventvalue%
+ TaskValueSet AutoCtrlSgs,vent,0
+ GPIO [rlPins#vent],%eventvalue%
+ TaskValueSet Vent,Sts,%eventvalue%
+ Publish,%sysname%/status/vent_switch,%eventvalue%
+ Publish,%sysname%/status/vent_auto,[AutoCtrlSgs#vent]
+Endon
+
+On cfgVentTsk Do
+If [VentSgs#ventDrtnPerc] = 0
+ TaskValueSet VentSgs,ventDrtnPerc,[ventDrtnPercNvs#GetLevel]
+Endif
+
+If [VentSgs#ventGapMin] = 0
+ TaskValueSet VentSgs,ventGapMin,[ventGapMinNvs#GetLevel]
+Endif
+
+If [rlPins#vent] = 0
+ TaskValueSet rlPins,vent,25
+Endif
+
+If [AutoCtrlSgs#vent] = 0 And [ManCtrlSgs#vent] = 0
+ GPIO [rlPins#vent],0
+ TaskValueSet Vent,Sts, 0
+ TaskValueSet AutoCtrlSgs,vent,1
+Endif
+Endon
+
+On updVentSgs Do
+ Publish,%sysname%/status/vent_gap,[VentSgs#ventGapMin]
+ Publish,%sysname%/status/vent_dur,[VentSgs#ventDrtnPerc]
+ Publish,%sysname%/status/vent_switch,[VentSgs#Sts]
+ Publish,%sysname%/status/vent_auto,[AutoCtrlSgs#vent]
+Endon
